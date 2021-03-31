@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 namespace cuchi_lua_utils
 {
@@ -12,11 +13,25 @@ namespace cuchi_lua_utils
 
             if (string.IsNullOrEmpty(keyChoosed) || keyChoosed != "events" && keyChoosed != "vars")
             {
-                Console.WriteLine("Please, choose a good key! Press a key to reset.");
-                Console.ReadKey();
-                Main();
+                OnBadArgument("Please, choose a good key! Press a key to reset.");
                 return;
             }
+
+            Console.WriteLine("Specify a path");
+            string pathEntered = Console.ReadLine();
+
+            if (!Directory.Exists(pathEntered))
+            {
+                OnBadArgument("Please, choose a working path! Press a key to reset.");
+                return;
+            }
+        }
+
+        private static void OnBadArgument(string errorMessage)
+        {
+            Console.WriteLine(errorMessage);
+            Console.ReadKey();
+            Main();
         }
     }
 }
