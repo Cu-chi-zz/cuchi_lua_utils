@@ -85,29 +85,6 @@ namespace cuchi_lua_utils
             Main();
         }
 
-        private static string GenerateString(int length)
-        {
-            StringBuilder str_build = new StringBuilder();
-            Random random = new Random();
-
-            char letter;
-
-            for (int i = 0; i < length; i++)
-            {
-                double flt = random.NextDouble();
-                int shift = Convert.ToInt32(Math.Floor(25 * flt));
-                letter = Convert.ToChar(shift + 65);
-                str_build.Append(letter);
-            }
-            return str_build.ToString();
-        }
-
-        private static int GenerateInt(int lengthMin, int lengthMax)
-        {
-            Random random = new Random();
-            return random.Next(lengthMin, lengthMax);
-        }
-
         public static string Base64Encode(string plainText)
         {
             var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
