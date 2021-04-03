@@ -32,39 +32,104 @@ namespace cuchi_lua_utils
             {
                 Stopwatch watchFolder = new Stopwatch();
                 watchFolder.Start();
+
+                int filesCounter = 0;
                 foreach (string file in Directory.GetFiles(pathEntered, "*.lua", SearchOption.AllDirectories))
                 {
+                    if (!Directory.Exists(@".\backups\"))
+                    {
+                        Directory.CreateDirectory(@".\backups\");
+                    }
+
+                    var currentFile = new FileInfo(file);
+
+                    if (!File.Exists($@".\backups\{currentFile.Name}"))
+                    {
+                        File.Copy(file, $@".\backups\{currentFile.Name}");
+                    }
+                    else
+                    {
+                        File.Delete($@".\backups\{currentFile.Name}");
+                        File.Copy(file, $@".\backups\{currentFile.Name}");
+                    }
+
+                    Console.WriteLine($"File: {currentFile.Name}");
                     Stopwatch watchFile = new Stopwatch();
                     watchFile.Start();
                     string[] lines = File.ReadAllLines(file);
-                    using (StreamWriter f = new StreamWriter($@"{file}"))
+                    if (lines.Length > 0)
                     {
-                        for (int currLine = 0; currLine < lines.Length; currLine++)
+                        using (StreamWriter f = new StreamWriter($@"{file}"))
                         {
-                            if (lines[currLine].StartsWith("EventHandler"))
+                            for (int currLine = 0; currLine < lines.Length; currLine++)
                             {
-                                string[] linesSp = { };
-                                if (lines[currLine].Contains('"') && !lines[currLine].Contains('\''))
+                                if (!lines[currLine].StartsWith("--"))
                                 {
-                                    linesSp = lines[currLine].Split('"');
-                                }
-                                else if (lines[currLine].Contains('\'') && !lines[currLine].Contains('"'))
-                                {
-                                    linesSp = lines[currLine].Split('\'');
-                                }
+                                    if (lines[currLine].Contains("AddEventHandler(") || lines[currLine].Contains("RegisterNetEvent(") || lines[currLine].Contains("TriggerServerEvent(") || lines[currLine].Contains("TriggerClientEvent(") || lines[currLine].Contains("TriggerEvent(") || lines[currLine].Contains("RegisterServerEvent("))
+                                    {
+                                        string[] linesSp = { };
+                                        if (lines[currLine].Contains('"') && !lines[currLine].Contains('\''))
+                                        {
+                                            linesSp = lines[currLine].Split('"');
+                                        }
+                                        else if (lines[currLine].Contains('\'') && !lines[currLine].Contains('"'))
+                                        {
+                                            linesSp = lines[currLine].Split('\'');
+                                        }
+                                        // Erreur causé : si les deux, aucun n'est trouvé
 
-                                string nameOfEvent = linesSp[1];
-                                lines[currLine] = lines[currLine].Replace(nameOfEvent, Base64Encode(nameOfEvent));
+                                        try
+                                        {
+                                            string nameOfEvent = linesSp[1];
+                                            lines[currLine] = lines[currLine].Replace(nameOfEvent, Base64Encode(nameOfEvent));
+                                        }
+                                        catch (IndexOutOfRangeException ex)
+                                        {
+                                            Console.ForegroundColor = ConsoleColor.DarkYellow;
+                                            Console.WriteLine($"{currLine}: skipped event. ({lines[currLine]})");
+                                            Console.ResetColor();
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            Console.WriteLine(ex);
+                                            return;
+                                        }
+                                    }
+                                }
                             }
+
+                            filesCounter++;
+                        }
+
+                        File.WriteAllLines(file, lines);
+                        watchFile.Stop();
+                        if (watchFile.Elapsed.TotalMilliseconds > 1000)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Yellow;
+                            Console.WriteLine($"Replaced for {currentFile.Name}\nProcess (replaced {lines.Length} lines) took: {watchFile.Elapsed.TotalSeconds} seconds");
+                            Console.ResetColor();
+                        }
+                        else if (watchFile.Elapsed.TotalMilliseconds > 5000)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine($"Replaced for {currentFile.Name}\nProcess (replaced {lines.Length} lines) took: {watchFile.Elapsed.TotalSeconds} seconds");
+                            Console.ResetColor();
+                        }
+                        else if (watchFile.Elapsed.TotalMilliseconds < 200)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            Console.WriteLine($"Replaced for {currentFile.Name}\nProcess (replaced {lines.Length} lines) took: {watchFile.Elapsed.TotalSeconds} seconds");
+                            Console.ResetColor();
+                        }
+                        else
+                        {
+                            Console.ResetColor();
+                            Console.WriteLine($"Replaced for {currentFile.Name}\nProcess (replaced {lines.Length} lines) took: {watchFile.Elapsed.TotalSeconds} seconds");
                         }
                     }
-
-                    File.WriteAllLines(file, lines);
-                    watchFile.Stop();
-                    Console.WriteLine($"Process (replace lines) took: {watchFile.Elapsed.TotalSeconds} seconds");
                 }
                 watchFolder.Stop();
-                Console.WriteLine($"Process (all folders) took: {watchFolder.Elapsed.TotalSeconds} seconds");
+                Console.WriteLine($"Process (all files: {filesCounter}) took: {watchFolder.Elapsed.TotalSeconds} seconds");
             }
             catch (UnauthorizedAccessException ex)
             {
