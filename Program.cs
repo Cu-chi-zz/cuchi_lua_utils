@@ -42,15 +42,11 @@ namespace cuchi_lua_utils
                 }
             }
 
+            Console.Clear();
             try
             {
                 Stopwatch watchFolder = new Stopwatch();
                 watchFolder.Start();
-
-                if (!logs)
-                {
-                    Console.WriteLine("Processing...");
-                }
 
                 int filesCounter = 0;
                 int linesCounter = 0;
@@ -85,17 +81,28 @@ namespace cuchi_lua_utils
                     DirectoryCopy(pathEntered, $@".\backups-{iDir}\", true);
                 }
 
-                foreach (string file in Directory.GetFiles(pathEntered, "*.lua", SearchOption.AllDirectories))
+                string[] path = Directory.GetFiles(pathEntered, "*.lua", SearchOption.AllDirectories);
+
+                int percentage = 0;
+
+                foreach (string file in path)
                 {
+                    if (!logs)
+                    {
+                        Console.Clear();
+                        percentage = (filesCounter / path.Length) * 100;
+                        Console.WriteLine($"Processing: {percentage}%");
+                    }
+
                     var currentFile = new FileInfo(file);
 
+                    Stopwatch watchFile = new Stopwatch();
                     if (logs)
                     {
                         Console.WriteLine($"File: {currentFile.Name}");
+                        watchFile.Start();
                     }
 
-                    Stopwatch watchFile = new Stopwatch();
-                    watchFile.Start();
                     string[] lines = File.ReadAllLines(file);
                     if (lines.Length > 0)
                     {
@@ -134,13 +141,25 @@ namespace cuchi_lua_utils
                                                 Console.ResetColor();
                                             }
                                         }
-                                        // Erreur causé : si les deux, aucun n'est trouvé
 
                                         try
                                         {
                                             string nameOfEvent = linesSp[1];
-                                            lines[currLine] = lines[currLine].Replace(nameOfEvent, Base64Encode(nameOfEvent));
-                                            totalLinesReplaced++;
+                                            if (!IsFivemEvent(nameOfEvent))
+                                            {
+                                                lines[currLine] = lines[currLine].Replace(nameOfEvent, Base64Encode(nameOfEvent));
+                                                totalLinesReplaced++;
+                                            }
+                                            else
+                                            {
+                                                totalLinesSkipped++;
+                                                if (logs)
+                                                {
+                                                    Console.ForegroundColor = ConsoleColor.Magenta;
+                                                    Console.WriteLine($"{currLine}: skipped event (FiveM event).");
+                                                    Console.ResetColor();
+                                                }
+                                            }
                                         }
                                         catch (IndexOutOfRangeException)
                                         {
@@ -164,9 +183,9 @@ namespace cuchi_lua_utils
                         }
 
                         File.WriteAllLines(file, lines);
-                        watchFile.Stop();
                         if (logs)
                         {
+                            watchFile.Stop();
                             if (watchFile.Elapsed.TotalMilliseconds > 1000)
                             {
                                 Console.ForegroundColor = ConsoleColor.Yellow;
@@ -281,6 +300,62 @@ namespace cuchi_lua_utils
                     DirectoryCopy(subdir.FullName, tempPath, copySubDirs);
                 }
             }
+        }
+
+        private static bool IsFivemEvent(string eventName)
+        {
+            string[] fivemEvents =
+            {
+                "gameEventTriggered",
+                "onResourceStart",
+                "populationPedCreating",
+                "onClientResourceStart",
+                "onResourceStop",
+                "onClientResourceStop",
+                "playerSpawned",
+                "onClientMapStart",
+                "onClientGameTypeStart",
+                "onClientMapStop",
+                "onClientGameTypeStop",
+                "getMapDirectives",
+                "onPlayerDied",
+                "onPlayerKilled",
+                "playerActivated",
+                "sessionInitialized",
+                "chatMessage",
+                "chat:addMessage",
+                "chat:addTemplate",
+                "chat:removeSuggestion",
+                "chat:clear",
+                "entityCreated",
+                "playerEnteredScope",
+                "entityCreating",
+                "entityRemoved",
+                "onResourceListRefresh",
+                "onServerResourceStart",
+                "onServerResourceStop",
+                "playerConnecting",
+                "playerJoining",
+                "playerLeftScope",
+                "startProjectileEvent",
+                "onResourceStarting",
+                "playerDropped",
+                "rconCommand",
+                "weaponDamageEvent",
+                "vehicleComponentControlEvent",
+                "respawnPlayerPedEvent",
+                "explosionEvent"
+            };
+
+            foreach (string fivemEventName in fivemEvents)
+            {
+                if (eventName == fivemEventName)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
