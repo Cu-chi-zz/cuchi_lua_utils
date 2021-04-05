@@ -1,9 +1,6 @@
 <h1 align="center">Welcome to Cuchi Lua Utils 👋</h1>
 <p>
   <img alt="Version" src="https://img.shields.io/badge/version-1.0.9-blue.svg?cacheSeconds=2592000" />
-  <a href="https://github.com/kefranabg/readme-md-generator/blob/master/LICENSE" target="_blank">
-    <img alt="License: MIT" src="https://img.shields.io/github/license/Cu-chi/Cuchi Lua Utils" />
-  </a>
 </p>
 
 > Tools for fivem lua events
@@ -25,7 +22,6 @@ Give a ⭐️ if this project helped you!
 ## 📝 License
 
 Copyright © 2021 [Cu-chi](https://github.com/Cu-chi).<br />
-This project is [MIT](https://github.com/kefranabg/readme-md-generator/blob/master/LICENSE) licensed.
 
 ***
 _This README was generated with ❤️ by [readme-md-generator](https://github.com/kefranabg/readme-md-generator)_
