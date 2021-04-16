@@ -83,14 +83,11 @@ namespace cuchi_lua_utils
 
                 string[] path = Directory.GetFiles(pathEntered, "*.lua", SearchOption.AllDirectories);
 
-                int percentage = 0;
-
                 foreach (string file in path)
                 {
                     if (!logs)
                     {
-                        Console.Clear();
-                        percentage = (filesCounter / path.Length) * 100;
+                        double percentage = (double)filesCounter / (double)path.Length * 100;
                         Console.WriteLine($"Processing: {percentage}%");
                     }
 
@@ -137,7 +134,7 @@ namespace cuchi_lua_utils
                                             else if (FindFirstCharContainsString(lines[currLine]) == "unfinded" && logs)
                                             {
                                                 Console.ForegroundColor = ConsoleColor.DarkYellow;
-                                                Console.WriteLine($"{currLine}: skipped event. ({lines[currLine]})");
+                                                Console.WriteLine($"{currLine + 1}: skipped event. ({lines[currLine]})");
                                                 Console.ResetColor();
                                             }
                                         }
@@ -156,7 +153,7 @@ namespace cuchi_lua_utils
                                                 if (logs)
                                                 {
                                                     Console.ForegroundColor = ConsoleColor.Magenta;
-                                                    Console.WriteLine($"{currLine}: skipped event (FiveM event).");
+                                                    Console.WriteLine($"{currLine + 1}: skipped event (FiveM event).");
                                                     Console.ResetColor();
                                                 }
                                             }
@@ -167,7 +164,7 @@ namespace cuchi_lua_utils
                                             if (logs)
                                             {
                                                 Console.ForegroundColor = ConsoleColor.DarkYellow;
-                                                Console.WriteLine($"{currLine}: skipped event (out of range). ({lines[currLine]})");
+                                                Console.WriteLine($"{currLine + 1}: skipped event (out of range). ({lines[currLine]})");
                                                 Console.ResetColor();
                                             }
                                         }
@@ -209,6 +206,10 @@ namespace cuchi_lua_utils
                                 Console.ResetColor();
                                 Console.WriteLine($"Replaced for {currentFile.Name}\nProcess (replaced {lines.Length} lines) took: {Math.Round(watchFile.Elapsed.TotalSeconds, 5)} seconds");
                             }
+                        }
+                        else if (!logs)
+                        {
+                            Console.Clear();
                         }
                     }
                 }
